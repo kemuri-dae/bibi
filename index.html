@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Python Compiler — Все задачи • Pyodide</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+<style>
+/* Стиль для светлого фона */
+body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f5f5}
+header{background:#202124;color:#fff;padding:12px 20px;font-size:18px;margin-bottom:20px;}
+.container{padding:0 20px 20px 20px;}
+.task-block{background:#fff;border-radius:8px;padding:16px;margin-bottom:30px;box-shadow:0 2px 6px rgba(0,0,0,.1); border-left: 5px solid #1a73e8;}
+h3{color:#1a73e8; margin-top: 0;}
+p.description{font-size:14px; color:#333; white-space: pre-wrap;}
+h4{margin-top: 15px; margin-bottom: 5px;}
+textarea{width:100%;font-family:monospace;font-size:14px;padding:8px;border:1px solid #ccc;border-radius:4px;box-sizing: border-box;}
+.code-area{height:250px;}
+.input-area{height:100px; background:#f0f0ff;}
+button.run{margin-top:8px;background:#1a73e8;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer}
+.output{background:#111;color:#0f0;padding:10px;margin-top:10px;min-height:60px;font-family:monospace;white-space:pre-wrap;overflow-x: auto;}
+.info{font-size:13px;color:#555;margin-top:6px}
+</style>
+</head>
+<body>
+<header>Python Compiler • Все 28 заданий • Pyodide</header>
+
+<div class="container" id="tasks-container">
+    <div style="padding: 20px; text-align: center;" id="loading-status">
+        Загрузка Pyodide и задач... Пожалуйста, подождите.
+    </div>
+</div>
+
+<script>
+let pyodide;
+
+// Данные, извлеченные из файла Копия_блокнота__modul.ipynb (Все 28 задач)
+const tasks = [
+    {
+        title: "1 модуль • MPIBegin3",
+        desc: "ВАРИАНТ 6\nПроцессы и их ранги: 3, 5\n\nMPIBegin3. В процессах четного ранга (включая главный) ввести целое число,\nв процессах нечетного ранга ввести вещественное число. В каждом процессе вывести удвоенное значение введенного числа.",
+        template: "# Эмуляция MPI для Google Colab\n# Мы просто создадим 2 \"процесса\" и выполним код для каждого ранга\n\ndef mpi_process(rank):\n    print(f\"=== Процесс {rank} ===\")\n\n    if rank % 2 == 0:\n        # чётный процесс → ввод целого числа\n        value = int(input(f\"Процесс {rank}: введите целое число: \"))\n    else:\n        # нечётный процесс → ввод вещественное число\n        value = float(input(f\"Процесс {rank}: введите вещественное число: \"))\n\n    doubled = value * 2\n    print(f\"Процесс {rank}: удвоенное значение = {doubled}\\n\")\n\n\n# Запускаем \"два процесса\"\nfor r in range(2):\n    mpi_process(r)",
+        input_tip: "Ожидается 2 значения: [целое], [вещественное] (для рангов 0 и 1)"
+    },
+    {
+        title: "1 модуль • MPIBegin5",
+        desc: "MPIBegin5. В каждом процессе дано целое число N (> 0) и набор из N чисел. В\nпроцессах четного ранга (включая главный) вывести сумму чисел из данного набора, в процессах нечетного ранга вывести среднее арифметическое\nчисел из данного набора",
+        template: "# Эмуляция MPI для Google Colab\n# Запустим, например, 2 процесса (можешь поменять число)\n\nnum_processes = 471\n\ndef mpi_process(rank):\n    print(f\"=== Процесс {rank} ===\")\n\n    # ввод N\n    N = int(input(f\"Процесс {rank}: введите N (>0): \"))\n    if N <= 0:\n        print(\"N должно быть больше 0!\")\n        return\n\n    # ввод N чисел\n    numbers = []\n    print(f\"Процесс {rank}: введите {N} чисел:\")\n    for i in range(N):\n        x = float(input(f\"  число {i+1}: \"))\n        numbers.append(x)\n\n    # ЧЁТНЫЙ процесс → сумма\n    if rank % 2 == 0:\n        result = sum(numbers)\n        print(f\"Процесс {rank}: сумма = {result}\\n\")\n\n    # НЕЧЁТНЫЙ процесс → среднее\n    else:\n        result = sum(numbers) / N\n        print(f\"Процесс {rank}: среднее арифм. = {result}\\n\")\n\n\n# Запуск \"процессов\"\nfor r in range(num_processes):\n    mpi_process(r)",
+        input_tip: "Ожидается 471 блок ввода. Для каждого блока: N (целое > 0), затем N чисел (вещественных)."
+    },
+    {
+        title: "2 модуль • MPIBegin8",
+        desc: "ВАРИАНТ 5\nОбмен сообщениями между\nотдельными процессами:\n8, 11, 14, 18, 21, 25, 27, 28\n\nMPIBegin8. В каждом подчиненном процессе дано вещественное число. Переслать эти числа в главный процесс, используя функции MPI_Bsend (посылка сообщения с буферизацией) и MPI_Recv, и вывести их в главном процессе. Полученные числа выводить в порядке убывания рангов переславших их процессов. Для задания буфера использовать функцию\nMPI_Buffer_attach.",
+        template: "# Эмуляция MPIBegin8 для Google Colab\n# Каждый подчинённый процесс вводит вещественное число вручную\n\nnum_processes = 4   # выбери нужное количество процессов\nroot = 0            # главный процесс = 0\n# ---------- Эмуляция MPI буфера ----------\nclass MPI_Buffer:\n    def __init__(self):\n        self.buffer = []\n\n    def Bsend(self, value, source):\n        # Эмуляция MPI_Bsend — отправка с буферизацией\n        self.buffer.append((source, value))\n\n    def Recv_all(self):\n        # Эмуляция MPI_Recv — главный процесс получает все сообщения\n        return self.buffer\n\nbuffer = MPI_Buffer()\n# ---------- Эмуляция подчинённых процессов ----------\nfor rank in range(1, num_processes):\n    print(f\"Процесс {rank}:\")\n    value = float(input(\"  Введите вещественное число: \"))\n    buffer.Bsend(value, source=rank)\n    print()\n# ---------- Главный процесс ----------\nprint(\"=== Главный процесс (0) получает сообщения ===\")\nmessages = buffer.Recv_all()\n# сортировка по убыванию рангов\nmessages_sorted = sorted(messages, key=lambda x: x[0], reverse=True)\n\nprint(\"\\nПолученные числа в порядке убывания рангов:\")\nfor src, value in messages_sorted:\n    print(f\"Процесс {src}: {value}\")",
+        input_tip: "Ожидается 3 вещественных числа (для процессов 1, 2, 3)."
+    },
+    {
+        title: "2 модуль • MPIBegin11",
+        desc: "MPIBegin11. В главном процессе дан набор вещественных чисел; количество\nчисел равно количеству подчиненных процессов. С помощью функции\nMPI_Send переслать по одному числу в каждый из подчиненных процессов\n(первое число в процесс 1, второе — в процесс 2, и т. д.) и вывести в подчиненных процессах полученные числа.",
+        template: "# Эмуляция MPIBegin11 для Google Colab\n# Главный процесс отправляет по одному вещественному числу каждому подчиненному\n\nnum_processes = 5   # всего процессов (0 = главный, остальные подчиненные)\nroot = 0\n# ---------- Эмуляция MPI отправки сообщений ----------\nclass MPI_Simulator:\n    def __init__(self):\n        self.mailbox = {}  # {rank: value}\n\n    def Send(self, value, dest):\n        # Эмуляция MPI_Send: просто кладём сообщение в \"почтовый ящик\"\n        self.mailbox[dest] = value\n\n    def Recv(self, source):\n        return self.mailbox[source]\n\nmpi = MPI_Simulator()\n# ---------- Главный процесс ----------\nif root == 0:\n    slave_count = num_processes - 1\n    print(f\"Главный процесс: введите {slave_count} вещественных чисел.\")\n    numbers = []\n    for i in range(slave_count):\n        x = float(input(f\"  Число для процесса {i+1}: \"))\n        numbers.append(x)\n    # отправляем каждому подчинённому одно число\n    for rank in range(1, num_processes):\n        mpi.Send(numbers[rank - 1], dest=rank)\n# ---------- Подчинённые процессы ----------\nprint(\"\\n=== Полученные данные ===\")\nfor rank in range(1, num_processes):\n    received_value = mpi.Recv(source=rank)\n    print(f\"Процесс {rank} получил число: {received_value}\")",
+        input_tip: "Ожидается 4 вещественных числа (по одному для каждого подчиненного процесса 1, 2, 3, 4)."
+    },
+    {
+        title: "2 модуль • MPIBegin14",
+        desc: "MPIBegin14. В каждом подчиненном процессе дано целое число, причем только для одного процесса это число отлично от нуля. Переслать ненулевое\nчисло в главный процесс и вывести в главном процессе полученное число\nи ранг процесса, переславшего это число. Для приема сообщения в главном\nпроцессе использовать функцию MPI_Recv с параметром\nMPI_ANY_SOURCE",
+        template: "# Эмуляция MPIBegin14 для Google Colab\n\nnum_processes = 6   # 0 = главный, остальные подчинённые\nroot = 0\n\n# ---------- Эмуляция MPI Mailbox ----------\nclass MPI_Simulator:\n    def __init__(self):\n        self.mailbox = []  # список сообщений (source, value)\n\n    def Send(self, value, source):\n        self.mailbox.append((source, value))\n\n    def Recv_any_source(self):\n        # Эмуляция MPI_Recv(..., MPI_ANY_SOURCE):\n        # просто берем первое сообщение, пришедшее от любого процесса\n        return self.mailbox[0]\n\nmpi = MPI_Simulator()\n# ---------- Подчинённые процессы ----------\nprint(\"Введите целые числа для всех подчинённых процессов.\")\nprint(\"Только одно число должно быть ненулевым!\\n\")\nfor rank in range(1, num_processes):\n    value = int(input(f\"Процесс {rank}: введите целое число: \"))\n    if value != 0:\n        mpi.Send(value, source=rank)\n# ---------- Главный процесс ----------\nprint(\"\\n=== Главный процесс (0) получает сообщение ===\")\nsource, value = mpi.Recv_any_source()\nprint(f\"Получено число: {value}\")\nprint(f\"От процесса: {source}\")",
+        input_tip: "Ожидается 5 целых чисел (для процессов 1, 2, 3, 4, 5). Только одно число должно быть ненулевым."
+    },
+    {
+        title: "2 модуль • MPIBegin18",
+        desc: "MPIBegin18. В каждом процессе дано целое число. С помощью функций\nMPI_Send и MPI_Recv осуществить для всех процессов циклический сдвиг\nданных с шагом 1, переслав число из процесса 0 в процесс 1, из процесса 1\nв процесс 2, …, из последнего процесса в процесс 0. В каждом процессе\nвывести полученное число.",
+        template: "# Эмуляция MPIBegin18 для Google Colab\n# Циклический сдвиг данных между процессами\n\nnum_processes = 5  # 0 = главный, остальные тоже участвуют\n\n# ---------- ВВОД ДАННЫХ ----------\nvalues = []\nprint(\"Введите целое число для каждого процесса:\\n\")\n\nfor rank in range(num_processes):\n    x = int(input(f\"Процесс {rank}: \"))\n    values.append(x)\n# ---------- ЭМУЛЯЦИЯ MPI SEND/RECV ЦИКЛА ----------\nreceived = [None] * num_processes\n\nfor rank in range(num_processes):\n    # куда отправляет текущий процесс\n    dest = (rank + 1) % num_processes\n    # имитация MPI_Send: process rank → dest\n    received[dest] = values[rank]\n# ---------- ВЫВОД РЕЗУЛЬТАТОВ ----------\nprint(\"\\n=== Результат циклического сдвига ===\")\nfor rank in range(num_processes):\n    print(f\"Процесс {rank} получил число: {received[rank]}\")",
+        input_tip: "Ожидается 5 целых чисел (для процессов 0, 1, 2, 3, 4)."
+    },
+    {
+        title: "2 модуль • MPIBegin21",
+        desc: "MPIBegin21. В каждом процессе даны два числа: вещественное A и целое N,\nпричем набор чисел N содержит все значения от 0 до K − 1, где K — количество процессов. Используя функции MPI_Send и MPI_Recv (с параметром MPI_ANY_SOURCE), выполнить в каждом процессе пересылку числа A в процесс N и вывести полученное число, а также ранг процесса, из\nкоторого число было получено.",
+        template: "# Эмуляция MPIBegin21 для Google Colab\n\nnum_processes = 3   # количество процессов K\n# Процессы имеют ранги 0 ... K-1\n# --------- Эмуляция MPI Mailbox (для ANY_SOURCE) ---------\nclass MPI_Simulator:\n    def __init__(self):\n        self.mailbox = []  # список сообщений (source, dest, value)\n    def Send(self, value, source, dest):\n        self.mailbox.append((source, dest, value))\n    def Recv_any_source(self, dest_rank):\n        # ищем сообщение с нужным назначением (dest), источник любой\n        for msg in self.mailbox:\n            source, dest, value = msg\n            if dest == dest_rank:\n                return source, value\n        return None, None  # если нет сообщений (теоретически не бывает)\n\nmpi = MPI_Simulator()\n# --------- Ввод данных A и N для каждого процесса ---------\nA_values = []\nN_values = []\nprint(\"Введите данные для каждого процесса:\")\nprint(\"A — вещественное число; N — целое от 0 до K-1 (перестановка)\\n\")\nfor rank in range(num_processes):\n    A = float(input(f\"Процесс {rank}: A = \"))\n    N = int(input(f\"Процесс {rank}: N = \"))\n    print()\n    A_values.append(A)\n    N_values.append(N)\n# --------- Эмуляция MPI_Send ---------\nfor rank in range(num_processes):\n    dest = N_values[rank]\n    mpi.Send(A_values[rank], source=rank, dest=dest)\n# --------- Эмуляция MPI_Recv(MPI_ANY_SOURCE) ---------\nprint(\"=== Результаты получения сообщений ===\")\nfor rank in range(num_processes):\n    source, value = mpi.Recv_any_source(dest_rank=rank)\n    print(f\"Процесс {rank} получил число {value} от процесса {source}\")",
+        input_tip: "Ожидается 6 значений (по 2 для каждого из 3 процессов): [A0], [N0], [A1], [N1], [A2], [N2]. N должен быть перестановкой [0, 1, 2]."
+    },
+    {
+        title: "2 модуль • MPIBegin25",
+        desc: "MPIBegin25. В каждом процессе дано вещественное число. С помощью функции MPI_Sendrecv_replace поменять порядок исходных чисел на обратный\n(число из процесса 0 должно быть передано в последний процесс, число из\nпроцесса 1 — в предпоследний процесс, …, число из последнего процесса — в процесс 0). В каждом процессе вывести полученное число.",
+        template: "# Эмуляция MPIBegin25 для Google Colab\n# Цель: поменять числа на обратный порядок (Sendrecv_replace)\n\nnum_processes = 5  # количество процессов K\n\n# ---------- Ввод исходных чисел ----------\nvalues = []\nprint(\"Введите вещественное число для каждого процесса:\\n\")\n\nfor rank in range(num_processes):\n    x = float(input(f\"Процесс {rank}: \"))\n    values.append(x)\n# ---------- Эмуляция MPI_Sendrecv_replace ----------\n# Каждый процесс \"отправляет\" своё число на новый ранг: reversed order\nreceived = [None] * num_processes\n\nfor rank in range(num_processes):\n    # индекс, в который попадет число\n    dest = num_processes - 1 - rank\n    received[dest] = values[rank]\n# ---------- Вывод ----------\nprint(\"\\n=== Результат обратного порядка ===\")\nfor rank in range(num_processes):\n    print(f\"Процесс {rank} получил число: {received[rank]}\")",
+        input_tip: "Ожидается 5 вещественных чисел (для процессов 0, 1, 2, 3, 4)."
+    },
+    {
+        title: "2 модуль • MPIBegin27",
+        desc: "MPIBegin27. В каждом подчиненном процессе дано целое число L (≥ 0) и набор из L пар чисел (A, N), где A — вещественное, а N — его порядковый\nномер. Все числа L в сумме равны 2K, где K — количество процессов; набор номеров N, данных во всех процессах, содержит все целые числа от 1\nдо 2K. Переслать числа A в главный процесс и вывести их в порядке, соответствующем возрастанию их номеров N. Для передачи номера N указывать его в качестве параметра msgtag функции MPI_Send.",
+        template: "# Эмуляция MPIBegin27 (Google Colab)\n# Главный процесс: rank 0\n\nnum_processes = 3  # количество процессов, включая главный (0)\nroot = 0\n# ---------- Эмуляция MPI Mailbox ----------\nclass MPI_Simulator:\n    def __init__(self):\n        # список сообщений: (source, msgtag=N, value=A)\n        self.mailbox = []\n    def Send(self, value, source, msgtag):\n        self.mailbox.append((source, msgtag, value))\n    def Recv_all(self):\n        return self.mailbox\nmpi = MPI_Simulator()\n# ---------- Подчинённые процессы ----------\nprint(\"Введите данные для подчинённых процессов (rank 1 ... K-1):\\n\")\nfor rank in range(1, num_processes):\n    L = int(input(f\"Процесс {rank}: введите L (количество пар): \"))\n    pairs = []\n    print(f\"Процесс {rank}: введите {L} пар (A, N):\")\n    for i in range(L):\n        A = float(input(f\"  A{i+1} = \"))\n        N = int(input(f\"  N{i+1} = \"))\n        pairs.append((A, N))\n    print()\n    # Отправляем каждую пару в главный процесс\n    for A, N in pairs:\n        mpi.Send(A, source=rank, msgtag=N)\n# ---------- Главный процесс ----------\nprint(\"=== Главный процесс собирает и сортирует данные ===\")\nmessages = mpi.Recv_all()\n# Сортировка по N (msgtag)\nmessages_sorted = sorted(messages, key=lambda x: x[1])\n\nprint(\"\\nРезультат (A по возрастанию N):\")\nfor src, N, A in messages_sorted:\n    print(f\"N={N}: A={A} (от процесса {src})\")",
+        input_tip: "Ожидается ввод для процессов 1 и 2. Введите: [L1], затем L1 раз [A1], [N1]; затем [L2], затем L2 раз [A2], [N2]. (Всего 2+2*L1+2*L2 значений)."
+    },
+    {
+        title: "3 модуль • MPIBegin49",
+        desc: "ВАРИАНТ 7\nКоллективные операции редукции: 49, 50, 55, 57\nПроизводные типы и упаковка данных: 60, 61, 65, 66, 69\n\nMPIBegin49. В каждом процессе дан набор из K + 5 чисел, где K — количество\nпроцессов. Используя функцию MPI_Reduce для операции MPI_MIN, найти минимальное значение среди элементов данных наборов с одним и тем же порядковым номером и вывести полученные минимумы в главном процессе.",
+        template: "# Эмуляция MPIBegin49 (Google Colab)\n\nnum_processes = 3 # Количество процессов K\n\n# ---------- ВВОД ДАННЫХ ----------\ndata_sets = [] # данные для каждого процесса\nprint(f\"Введите {num_processes + 5} чисел для каждого из {num_processes} процессов:\")\n\nfor rank in range(num_processes):\n    numbers = []\n    print(f\"Процесс {rank}:\")\n    for i in range(num_processes + 5):\n        x = float(input(f\"  число {i+1}: \"))\n        numbers.append(x)\n    data_sets.append(numbers)\n    print()\n\n# ---------- Эмуляция MPI_Reduce(MPI_MIN) ----------\n# минимумы по каждому индексу\nmin_values = []\n\nfor i in range(num_processes + 5):\n    ith_values = [data_sets[rank][i] for rank in range(num_processes)]\n    min_i = min(ith_values)\n    min_values.append(min_i)\n\n# ---------- Вывод в главном процессе ----------\nprint(\"=== Минимальные значения по каждому индексу ===\")\nfor idx, value in enumerate(min_values):\n    print(f\"Элемент {idx}: минимальное = {value}\")",
+        input_tip: "Ожидается 8 чисел для Процесса 0, затем 8 для Процесса 1, затем 8 для Процесса 2. Всего 24 числа."
+    },
+    {
+        title: "3 модуль • MPIBegin50",
+        desc: "MPIBegin50. В каждом процессе дан набор из K + 5 целых чисел, где K — количество процессов. Используя функцию MPI_Reduce для операции\nMPI_MAXLOC, найти максимальное значение среди элементов данных наборов с одним и тем же порядковым номером и ранг процесса, содержащего это максимальное значение. Вывести в главном процессе вначале все\nмаксимумы, а затем — ранги содержащих их процессов.",
+        template: "# Эмуляция MPIBegin50 (Google Colab)\n\nnum_processes = 3 # Количество процессов K\n\n# ---------- ВВОД ДАННЫХ ----------\ndata_sets = [] # данные для каждого процесса\nprint(f\"Введите {num_processes + 5} целых чисел для каждого из {num_processes} процессов:\")\n\nfor rank in range(num_processes):\n    numbers = []\n    print(f\"Процесс {rank}:\")\n    for i in range(num_processes + 5):\n        x = int(input(f\"  число {i+1}: \"))\n        numbers.append(x)\n    data_sets.append(numbers)\n    print()\n\n# ---------- Эмуляция MPI_Reduce(MPI_MAXLOC) ----------\nmax_values = []\nmax_ranks = []\n\nfor i in range(num_processes + 5):\n    ith_values = [data_sets[rank][i] for rank in range(num_processes)]\n    max_val = max(ith_values)\n    max_rank = ith_values.index(max_val) # ранг процесса с максимумом\n    max_values.append(max_val)\n    max_ranks.append(max_rank)\n\n# ---------- Вывод в главном процессе ----------\nprint(\"=== Максимальные значения по каждому индексу ===\")\nprint(max_values)\n\nprint(\"\\n=== Ранги процессов, содержащих максимумы ===\")\nprint(max_ranks)",
+        input_tip: "Ожидается 8 целых чисел для Процесса 0, затем 8 для Процесса 1, затем 8 для Процесса 2. Всего 24 целых числа."
+    },
+    {
+        title: "3 модуль • MPIBegin55",
+        desc: "MPIBegin55. В каждом процессе дан набор из K(K + 3)/2 целых чисел, где K —\nколичество процессов. Используя функцию MPI_Reduce_scatter, найти минимальные значения среди элементов этих наборов с одним и тем же порядковым номером и переслать первые два минимума в процесс 0, следующие три — в процесс 1, …, последние K + 1 минимумов — в процесс K − 1. Вывести в каждом процессе полученные данные.",
+        template: "# Эмуляция MPIBegin55 (Google Colab)\n\nK = 3 # Количество процессов\nnum_elements = int(K * (K + 3) / 2) # 9 элементов\n\n# ---------- ВВОД ДАННЫХ ----------\ndata_sets = [] # данные для каждого процесса\nprint(f\"Введите {num_elements} целых чисел для каждого из {K} процессов:\")\n\nfor rank in range(K):\n    numbers = []\n    print(f\"Процесс {rank}:\")\n    for i in range(num_elements):\n        x = int(input(f\" число {i+1}: \"))\n        numbers.append(x)\n    data_sets.append(numbers)\n    print()\n\n# ---------- Эмуляция MPI_Reduce_scatter ----------\n# 1. Находим минимумы по индексам (Reduce-часть)\nmin_values = []\nfor i in range(num_elements):\n    ith_values = [data_sets[rank][i] for rank in range(K)]\n    min_values.append(min(ith_values))\n\n# 2. Распределение (Scatter-часть)\n# K=3. count = [2, 3, 4]\nrecv_counts = [r + 2 for r in range(K)]\nreceived_data = []\n\ncurrent_index = 0\nfor count in recv_counts:\n    received_data.append(min_values[current_index : current_index + count])\n    current_index += count\n\n# ---------- Вывод ----------\nprint(\"=== Результаты MPI_Reduce_scatter ===\\n\")\nfor rank in range(K):\n    print(f\"Процесс {rank} получил: {received_data[rank]}\")",
+        input_tip: "Ожидается 9 целых чисел для Процесса 0, затем 9 для Процесса 1, затем 9 для Процесса 2. Всего 27 чисел."
+    },
+    {
+        title: "3 модуль • MPIBegin57",
+        desc: "MPIBegin57. В каждом процессе дан набор из K + 5 целых чисел, где K — количество процессов. Используя функцию MPI_Scan для операции MPI_MAX, найти для каждого процесса набор максимальных значений среди элементов данных наборов с одним и тем же порядковым номером, пересланных ему процессами с меньшими рангами (включая данное в этом процессе), и вывести в каждом процессе полученный набор.",
+        template: "# Эмуляция MPIBegin57 (Google Colab)\n\nnum_processes = 3 # Количество процессов K\nnum_elements = num_processes + 5 # 8 элементов\n\n# ---------- ВВОД ДАННЫХ ----------\ndata_sets = [] # данные для каждого процесса\nprint(f\"Введите {num_elements} целых чисел для каждого из {num_processes} процессов:\")\n\nfor rank in range(num_processes):\n    numbers = []\n    print(f\"Процесс {rank}:\")\n    for i in range(num_elements):\n        x = int(input(f\" число {i+1}: \"))\n        numbers.append(x)\n    data_sets.append(numbers)\n    print()\n\n# ---------- Эмуляция MPI_Scan(MPI_MAX) ----------\nscan_results = []\n\nfor R in range(num_processes):\n    # максимум по каждому индексу среди процессов 0..R\n    max_values = []\n    for i in range(num_elements):\n        ith_values = [data_sets[r][i] for r in range(R+1)]\n        max_values.append(max(ith_values))\n    scan_results.append(max_values)\n\n# ---------- Вывод ----------\nprint(\"=== Результаты MPI_Scan(MPI_MAX) ===\\n\")\nfor rank in range(num_processes):\n    print(f\"Процесс {rank} получил максимумы: {scan_results[rank]}\")",
+        input_tip: "Ожидается 8 целых чисел для Процесса 0, затем 8 для Процесса 1, затем 8 для Процесса 2. Всего 24 числа."
+    },
+    {
+        title: "3 модуль • MPIBegin60",
+        desc: "MPIBegin60. В каждом подчиненном процессе дана тройка целых чисел. Используя производный тип, содержащий три целых числа, и одну коллективную операцию пересылки данных, переслать числа из подчиненных процессов в главный и вывести их в главном процессе в порядке возрастания рангов переславших их процессов.",
+        template: "# Эмуляция MPIBegin60 (Google Colab)\n\nnum_processes = 3 # Количество процессов K\nroot = 0\n\n# ---------- ВВОД ДАННЫХ В ПОДЧИНЕННЫХ ПРОЦЕССАХ ----------\nprocess_data = {}\nprint(\"Введите тройку целых чисел для каждого подчиненного процесса:\\n\")\n\nfor rank in range(1, num_processes):\n    t1 = int(input(f\"Процесс {rank}: число 1 (int): \"))\n    t2 = int(input(f\"Процесс {rank}: число 2 (int): \"))\n    t3 = int(input(f\"Процесс {rank}: число 3 (int): \"))\n    process_data[rank] = (t1, t2, t3)\n    print()\n\n# ---------- Эмуляция MPI_Gather ----------\n# Собираем данные в главный процесс (0)\n# (Имитация производного типа)\n\ngathered_data = []\nfor rank in range(1, num_processes):\n    # Добавляем ранг 0 тоже, если он участвует (хотя тут только подчиненные отправляют)\n    # Для порядка в выводе, добавим пустой элемент для ранга 0\n    if rank == 1 and 0 not in process_data: gathered_data.append((0, 0, 0))\n    gathered_data.append(process_data[rank])\n\n# Удаляем заглушку для ранга 0, если она была. Главный процесс получает только данные от подчиненных.\nif gathered_data[0] == (0, 0, 0): gathered_data.pop(0)\n\n# Главный процесс выводит\nprint(\"=== Главный процесс (0) получил данные ===\")\nfor i, triplet in enumerate(gathered_data):\n    # Предполагаем, что порядок получения соответствует порядку рангов\n    rank = i + 1 \n    print(f\"Процесс {rank} прислал тройку: {triplet}\")",
+        input_tip: "Ожидается 2 тройки целых чисел. Всего 6 чисел."
+    },
+    {
+        title: "3 модуль • MPIBegin61",
+        desc: "MPIBegin61. В главном процессе дан набор троек чисел, в каждой из которых первые два числа являются целыми, а третье — вещественным; количество\nтроек равно количеству подчиненных процессов. Используя производный тип, содержащий два целых и одно вещественное число, и одну коллективную операцию пересылки данных, переслать по одной тройке в каждый из подчиненных процессов и вывести в подчиненных процессах полученные тройки.",
+        template: "# Эмуляция MPIBegin61 (Google Colab)\n\nnum_processes = 3 # Количество процессов K\nroot = 0\nslave_count = num_processes - 1\n\n# ---------- ВВОД ДАННЫХ В ГЛАВНОМ ПРОЦЕССЕ ----------\nmain_data = []\nprint(f\"Главный процесс (0): введите {slave_count} троек (int, int, float):\\n\")\n\nfor i in range(slave_count):\n    t1 = int(input(\" число 1 (int): \"))\n    t2 = int(input(\" число 2 (int): \"))\n    t3 = float(input(\" число 3 (float): \"))\n    main_data.append((t1, t2, t3))\n    print()\n\n# ---------- Эмуляция MPI_Scatter ----------\n# Отправка по одной тройке каждому подчиненному\nreceived_by_slaves = {}\nfor rank in range(1, num_processes):\n    received_by_slaves[rank] = main_data[rank - 1]\n\n# ---------- Вывод в подчиненных процессах ----------\nprint(\"=== Подчиненные процессы получили данные ===\")\nfor rank in range(1, num_processes):\n    triplet = received_by_slaves[rank]\n    print(f\"Процесс {rank} получил тройку: {triplet}\")",
+        input_tip: "Ожидается 2 тройки (int, int, float). Всего 6 чисел."
+    },
+    {
+        title: "3 модуль • MPIBegin65",
+        desc: "MPIBegin65. В каждом подчиненном процессе дано число M (≥ 1) и M троек чисел, в каждой из которых первые два числа являются целыми, а третье — вещественным. Используя производный тип, содержащий три числа (два целых и одно вещественное), и одну коллективную операцию пересылки данных, переслать наборы троек из подчиненных процессов в главный и вывести их в главном процессе в порядке возрастания рангов переславших их процессов.",
+        template: "# Эмуляция MPIBegin65 (Google Colab)\n\nnum_processes = 3 # Количество процессов K\n\n# ---------- ВВОД ДАННЫХ В ПОДЧИНЕННЫХ ПРОЦЕССАХ ----------\nall_triplets = [] # Все тройки, которые будут отправлены\n\nprint(\"Введите данные для подчиненных процессов (rank 1 ... K-1):\\n\")\nfor rank in range(1, num_processes):\n    M = int(input(f\"Процесс {rank}: введите M (количество троек): \"))\n    print(f\"Процесс {rank}: введите {M} троек (int, int, float):\")\n    \n    for i in range(M):\n        t1 = int(input(\" число 1 (int): \"))\n        t2 = int(input(\" число 2 (int): \"))\n        t3 = float(input(\" число 3 (float): \"))\n        all_triplets.append({'rank': rank, 'data': (t1, t2, t3)})\n    print()\n\n# ---------- Эмуляция MPI_Gather/Gatherv ----------\n# Главный процесс собирает все тройки\n\n# Главный процесс выводит\nprint(\"=== Главный процесс (0) получил данные ===\")\n# Сортируем по рангу (для вывода)\nall_triplets.sort(key=lambda x: x['rank'])\n\nfor item in all_triplets:\n    print(f\"Процесс {item['rank']} прислал тройку: {item['data']}\")",
+        input_tip: "Ожидается M1 целое, затем M1 раз (int, int, float); затем M2 целое, затем M2 раз (int, int, float). (M ≥ 1)."
+    },
+    {
+        title: "3 модуль • MPIBegin66",
+        desc: "MPIBegin66. В каждом процессе даны два числа: целое A и вещественное B. Используя производный тип, содержащий два числа (целое и вещественное), и одну коллективную операцию пересылки данных, переслать наборы чисел из всех процессов во все процессы и вывести в каждом процессе полученные наборы в порядке возрастания рангов переславших их процессов.",
+        template: "# Эмуляция MPIBegin66 (Google Colab)\n\nnum_processes = 3 # Количество процессов K\n\n# ---------- ВВОД ДАННЫХ В КАЖДОМ ПРОЦЕССЕ ----------\nprocess_data = []\nprint(\"Введите пару чисел (int A, float B) для каждого процесса:\\n\")\n\nfor rank in range(num_processes):\n    A = int(input(f\"Процесс {rank}: A (int) = \"))\n    B = float(input(f\"Процесс {rank}: B (float) = \"))\n    process_data.append((A, B))\n    print()\n\n# ---------- Эмуляция MPI_Allgather ----------\n# Все процессы получают массив всех пар (имитация производного типа)\nall_gathered_data = process_data\n\n# ---------- Вывод в каждом процессе ----------\nprint(\"=== Результаты MPI_Allgather ===\\n\")\nfor rank in range(num_processes):\n    print(f\"Процесс {rank} получил наборы в порядке рангов:\")\n    for sender_rank, pair in enumerate(all_gathered_data):\n        print(f\"  От процесса {sender_rank}: {pair}\")",
+        input_tip: "Ожидается 3 пары чисел (int A, float B). Всего 6 чисел."
+    },
+    {
+        title: "3 модуль • MPIBegin69",
+        desc: "MPIBegin69. В главном процессе даны K целых чисел и K вещественных чисел, где K — количество процессов. Используя функции MPI_Pack и MPI_Bcast,\nпереслать данные во все процессы, а затем с помощью функции MPI_Unpack\nраспаковать и вывести в подчиненных процессах полученные наборы целых\nи вещественных чисел.",
+        template: "# Эмуляция MPIBegin69 (Google Colab)\n\nK = 3 # Количество процессов\nroot = 0\n\n# ---------- ВВОД ДАННЫХ В ГЛАВНОМ ПРОЦЕССЕ ----------\nints = []\nfloats = []\nprint(f\"Главный процесс: введите {K} целых чисел\")\nfor i in range(K):\n    x = int(input(f\" int {i+1} = \"))\n    ints.append(x)\nprint()\nprint(f\"Главный процесс: введите {K} вещественных чисел\")\nfor i in range(K):\n    x = float(input(f\" float {i+1} = \"))\n    floats.append(x)\n\n# Эмуляция MPI_Pack - объединенный массив данных\npacked_data = ints + floats\n\n# ---------- Эмуляция MPI_Bcast ----------\n# Все процессы получают один и тот же упакованный массив\nreceived_data = packed_data # упрощённая эмуляция\n\n# ---------- Эмуляция MPI_Unpack и Вывод ----------\nprint(\"\\n=== Подчиненные процессы распаковывают данные ===\")\nfor rank in range(1, K):\n    # Эмуляция MPI_Unpack\n    unpacked_data = received_data # упрощённая эмуляция\n    # Знаем, что первые K - int, следующие K - float\n    ints_received = unpacked_data[:K]\n    floats_received = unpacked_data[K:]\n    print(f\"Процесс {rank} получил:\")\n    print(f\" Целые числа: {ints_received}\")\n    print(f\" Вещественные числа: {floats_received}\")",
+        input_tip: "Ожидается 3 целых числа, затем 3 вещественных числа. Всего 6 чисел."
+    },
+    {
+        title: "4 модуль • MPIBegin32",
+        desc: "ВАРИАНТ 8\nКоллективные операции пересылки данных (MPI_Gather, MPI_Gatherv, MPI_Scatter, MPI_Scatterv, MPI_Allgather, MPI_Alltoall, MPI_Alltoallv): 32, 35, 38, 41, 43, 46\n\nMPIBegin32. В каждом процессе дано вещественное число. Используя функцию MPI_Gather, переслать эти числа в главный процесс и вывести их в главном процессе в порядке возрастания рангов переславших их процессов (включая данное в главном процессе).",
+        template: "# Эмуляция MPIBegin32 (Google Colab)\n\nnum_processes = 2 # Количество процессов K\nroot = 0\n# ---------- Ввод данных ----------\nvalues = []\nfor rank in range(num_processes):\n    x = float(input(f\"Введите вещественное число для процесса {rank}: \"))\n    values.append(x)\n# ---------- Эмуляция MPI_Gather ----------\ngathered_data = values # В главном процессе (0) собранный массив совпадает с values\n\n# ---------- Вывод в главном процессе ----------\nprint(\"\\n=== Главный процесс получил числа от всех процессов ===\")\nfor rank, value in enumerate(gathered_data):\n    print(f\"Процесс {rank} прислал число: {value}\")",
+        input_tip: "Ожидается 2 вещественных числа (для процессов 0 и 1)."
+    },
+    {
+        title: "4 модуль • MPIBegin35",
+        desc: "MPIBegin35. В главном процессе дан набор из K чисел, где K — количество процессов. Используя функцию MPI_Scatter, переслать по одному числу в каждый процесс и вывести в каждом процессе полученное число.",
+        template: "# Эмуляция MPIBegin35 для Google Colab\n# Коллективная операция = scatter\n\nnum_processes = 4 # K\nroot = 0\n# ---------- Главный процесс вводит набор ----------\nnumbers = []\nprint(f\"Главный процесс: введите {num_processes} чисел для scatter:\")\nfor i in range(num_processes):\n    x = float(input(f\" число {i+1}: \"))\n    numbers.append(x)\nprint()\n# ---------- Эмуляция MPI_Scatter ----------\n# numbers[i] → process[i]\nscatter_data = numbers\n\n# ---------- Каждый процесс выводит своё число ----------\nprint(\"=== Результаты MPI_Scatter ===\")\nfor rank, value in enumerate(scatter_data):\n    print(f\"Процесс {rank} получил число: {value}\")",
+        input_tip: "Ожидается 4 вещественных числа (набор для главного процесса)."
+    },
+    {
+        title: "4 модуль • MPIBegin38",
+        desc: "MPIBegin38. В главном процессе дан набор из K(K + 1)/2 чисел, где K — количество процессов. Используя функцию MPI_Scatterv, переслать первое число в процесс 0, следующие два — в процесс 1, …, последние K чисел — в процесс K − 1. Вывести в каждом процессе полученные числа.",
+        template: "# Эмуляция MPIBegin38 для Google Colab\n\nK = 3 # Количество процессов\nnum_elements = int(K * (K + 1) / 2) # 1+2+3 = 6 элементов\nroot = 0\n\n# ---------- Главный процесс вводит набор ----------\nnumbers = []\nprint(f\"Главный процесс: введите {num_elements} чисел для Scatterv:\")\nfor i in range(num_elements):\n    x = float(input(f\" число {i+1}: \"))\n    numbers.append(x)\nprint()\n\n# ---------- Эмуляция MPI_Scatterv ----------\n# Sendcounts (размер блоков): [1, 2, 3]\nrecv_counts = [r + 1 for r in range(K)]\n\nreceived_by_rank = []\ncurrent_index = 0\n\nfor count in recv_counts:\n    received_by_rank.append(numbers[current_index : current_index + count])\n    current_index += count\n\n# ---------- Каждый процесс выводит своё число ----------\nprint(\"=== Результаты MPI_Scatterv ===\")\nfor rank in range(K):\n    print(f\"Процесс {rank} получил числа: {received_by_rank[rank]}\")",
+        input_tip: "Ожидается 6 вещественных чисел (набор для главного процесса)."
+    },
+    {
+        title: "4 модуль • MPIBegin41",
+        desc: "MPIBegin41. В каждом процессе даны четыре целых числа. Используя функцию MPI_Allgather, переслать эти числа во все процессы и вывести их в\nкаждом процессе в порядке возрастания рангов переславших их процессов\n(включая числа, полученные из этого же процесса).",
+        template: "# Эмуляция MPIBegin41 для Google Colab\n# Коллективная операция = Allgather\n\nnum_processes = 2 # K\ncount = 4 # количество чисел в каждом процессе\n\n# ---------- Ввод наборов для каждого процесса ----------\nprocess_data = []\n\nfor rank in range(num_processes):\n    print(f\"Процесс {rank}: введите {count} целых чисел\")\n    nums = []\n    for i in range(count):\n        x = int(input(f\" число {i+1}: \"))\n        nums.append(x)\n    process_data.append(nums)\n    print()\n\n# ---------- Эмуляция MPI_Allgather ----------\n# Объединение всех наборов в один массив\nall_gathered_data = []\nfor data in process_data:\n    all_gathered_data.extend(data)\n\n# ---------- Вывод в каждом процессе ----------\nprint(\"=== Результаты MPI_Allgather ===\\n\")\nfor rank in range(num_processes):\n    print(f\"Процесс {rank} получил массив от всех процессов:\")\n    # Выводим данные, сгруппированные по рангам-отправителям\n    for sender_rank in range(num_processes):\n        start = sender_rank * count\n        end = start + count\n        data_from_sender = all_gathered_data.slice(start, end)\n        print(f\"  От процесса {sender_rank}: {data_from_sender}\")",
+        input_tip: "Ожидается 4 целых числа для Процесса 0, затем 4 для Процесса 1. Всего 8 чисел."
+    },
+    {
+        title: "4 модуль • MPIBegin43",
+        desc: "MPIBegin43. В каждом процессе дан набор из K чисел, где K — количество процессов. Используя функцию MPI_Alltoall, переслать первое число каждого набора в процесс 0, второе — в процесс 1, …, последнее число — в процесс K − 1. Вывести в каждом процессе полученные числа в порядке возрастания рангов переславших их процессов.",
+        template: "# Эмуляция MPIBegin43 для Google Colab\n# Коллективная операция = Alltoall\n\nnum_processes = 3 # K\nK = num_processes\n\n# ----- Ввод данных -----\nprocess_data = []\nfor rank in range(K):\n    print(f\"Процесс {rank}: введите {K} чисел\")\n    nums = []\n    for i in range(K):\n        x = float(input(f\" число {i+1}: \"))\n        nums.append(x)\n    process_data.append(nums)\n    print()\n\n# ----- Эмуляция MPI_Alltoall -----\n# Массив полученных данных\nreceived = [[] for _ in range(K)]\n\nfor sender_rank in range(K):\n    for receiver_rank in range(K):\n        # Process[sender_rank] отправляет numbers[receiver_rank] в Process[receiver_rank]\n        # (i-й элемент из набора отправителя идет в i-й получатель)\n        value = process_data[sender_rank][receiver_rank]\n        received[receiver_rank].append(value)\n\n# ----- Вывод -----\nprint(\"=== Результаты MPI_Alltoall ===\\n\")\nfor rank in range(K):\n    print(f\"Процесс {rank} получил числа (по рангам отправителей):\")\n    # Alltoallv гарантирует порядок, по которому они пришли\n    for sender_rank, value in enumerate(received[rank]):\n        print(f\"  От процесса {sender_rank}: {value}\")",
+        input_tip: "Ожидается 3 числа для Процесса 0, затем 3 для Процесса 1, затем 3 для Процесса 2. Всего 9 чисел."
+    },
+    {
+        title: "4 модуль • MPIBegin46",
+        desc: "MPIBegin46. В каждом процессе дан набор из K + 1 числа. Используя функцию MPI_Alltoallv, переслать первые два числа набора в процесс 0, следующие два — в процесс 1, …, последние два числа — в процесс K − 1. Вывести в каждом процессе полученные числа в порядке возрастания рангов переславших их процессов.",
+        template: "# Эмуляция MPIBegin46 с использованием принципа MPI_Alltoallv\nnum_processes = 3 # K\nK = num_processes\n# ----- Ввод данных -----\nprocess_data = []\nfor rank in range(num_processes):\n    print(f\"Процесс {rank}: введите {K+1} чисел\")\n    nums = []\n    for i in range(K + 1):\n        x = int(input(f\" число {i+1}: \"))\n        nums.append(x)\n    process_data.append(nums)\n    print()\n# ----- Эмуляция MPI_Alltoallv -----\n# Массив полученных данных\nreceived = [[] for _ in range(num_processes)]\n\nfor sender in range(num_processes):\n    # process[sender] отправляет [2, 2, 2] чисел\n    for receiver in range(num_processes):\n        start_index = receiver * 2\n        end_index = start_index + 2\n        # Числа, которые отправляет SENDER RECEIVER'у\n        data_to_send = process_data[sender].slice(start_index, end_index)\n        received[receiver].extend(data_to_send)\n\n# ----- Вывод -----\nprint(\"=== Результаты MPI_Alltoallv ===\\n\")\nfor rank in range(num_processes):\n    print(f\"Процесс {rank} получил числа (по рангам отправителей):\")\n    # Полученные данные в процессе RANK: [От 0: 2 числа], [От 1: 2 числа], [От 2: 2 числа]\n    for sender_rank in range(num_processes):\n        data = received[rank].slice(sender_rank * 2, sender_rank * 2 + 2)\n        print(f\"  От процесса {sender_rank}: {data}\")",
+        input_tip: "Ожидается 4 числа для Процесса 0, затем 4 для Процесса 1, затем 4 для Процесса 2. Всего 12 чисел."
+    },
+    {
+        title: "5 модуль • MPIBegin72",
+        desc: "ВАРИАНТ 9\nСоздание и использование групп и коммуникаторов: 72, 75, 78, 80\n\nMPIBegin72. В главном процессе дан набор из K целых чисел, где K — количество процессов. Используя функции MPI_Comm_split и MPI_Scatter, переслать по одному числу данного набора процессам с четными рангами (включая главный), входящим в новый коммуникатор. Вывести в каждом процессе полученное число (или сообщение о том, что процесс не входит в новый коммуникатор).",
+        template: "# Эмуляция MPIBegin72 (Google Colab)\n\ntotal_processes = 5 # Количество процессов в MPI_COMM_WORLD\nroot = 0\n\n# ---------- Ввод K чисел в главном процессе ----------\nmain_data = []\nprint(f\"Главный процесс (0): введите {total_processes} целых чисел для Scatter:\\n\")\n\nfor i in range(total_processes):\n    x = int(input(f\" число {i+1}: \"))\n    main_data.append(x)\nprint()\n\n# ---------- Эмуляция MPI_Comm_split (группа четных рангов) ----------\neven_ranks = [r for r in range(total_processes) if r % 2 == 0]\n\n# Эмуляция нового коммуникатора\n# Если процесс нечетный - он не в новом комм.\n# Если четный - его новый ранг: 0, 1, 2, ...\n\n# ---------- Эмуляция MPI_Scatter в новом коммуникаторе ----------\n# Главный процесс в новом комм. = rank 0 (который имеет исходный ранг 0)\nscatter_data = {} # {original_rank: value}\n\n# Эмуляция Scatter: Process 0 (в новом комм.) отправляет\n# main_data[i] → even_ranks[i]\nfor i, rank in enumerate(even_ranks):\n    scatter_data[rank] = main_data[i]\n\n# ======== Вывод ======== \nprint(\"\\n=== Результаты MPI_Scatter в новом коммуникаторе ===\")\nfor rank in range(total_processes):\n    if rank in scatter_data:\n        print(f\"Процесс {rank} (ранг в новом комм. {even_ranks.index(rank)}) получил: {scatter_data[rank]}\")\n    else:\n        print(f\"Процесс {rank} не входит в новый коммуникатор.\")",
+        input_tip: "Ожидается 5 целых чисел (набор для ранга 0)."
+    },
+    {
+        title: "5 модуль • MPIBegin75",
+        desc: "MPIBegin75. В главном процессе дано целое число N (1 < N ≤ K), где K — количество процессов. Используя функцию MPI_Cart_create, создать двумерную решетку размером N × (K // N), включив в нее первые N ⋅ (K // N) процессов. Найти в каждом процессе, входящем в решетку, его координаты и ранги соседей по первой размерности (сдвиг +1, –1) и вывести в каждом процессе полученные данные.",
+        template: "# Эмуляция MPIBegin75 (Google Colab)\n\nK = 6 # Общее количество процессов\n\n# ---------- ВВОД N (размер 1D) ----------\nN = int(input(\"Главный процесс: введите N (1 < N ≤ K): \"))\nif not (1 < N <= K):\n    print(\"Ошибка: N должно быть > 1 и <= K.\")\n    N = 2 # Стандартное значение\n\n# ---------- Эмуляция MPI_Cart_create ----------\nrows = N\ncols = K // N\ntotal_grid_processes = rows * cols\n\n# Если решетка не включает все процессы\nif total_grid_processes < K:\n    print(f\"Создана решетка {rows}x{cols} ({total_grid_processes} процессов). Процессы {total_grid_processes}..{K-1} не входят.\\n\")\n\ncoords = {}\nneighbors = {}\n\nfor rank in range(total_grid_processes):\n    r = rank // cols\n    c = rank % cols\n    coords[rank] = (r, c)\n    \n    # Соседи по 1D (строки)\n    neighbor1_prev = ((r - 1 + rows) % rows, c) # Ранг соседа (-1)\n    neighbor1_next = ((r + 1) % rows, c) # Ранг соседа (+1)\n    \n    # Обратное преобразование координат в ранг (для соседей)\n    def get_rank_from_coords(r_coord, c_coord):\n        return r_coord * cols + c_coord\n\n    neighbors[rank] = {\n        'r_prev': get_rank_from_coords(*neighbor1_prev),\n        'r_next': get_rank_from_coords(*neighbor1_next),\n    }\n\n# ====== Вывод в каждом процессе ======\nprint(\"\\n=== Координаты и соседи ===\")\nfor rank in range(K):\n    if rank in coords:\n        c = coords[rank]\n        n = neighbors[rank]\n        print(f\"Процесс {rank}: Координаты = {c}. Соседи по 1D: {n['r_prev']} (prev), {n['r_next']} (next).\")\n    else:\n        print(f\"Процесс {rank}: Не входит в решетку.\")",
+        input_tip: "Ожидается 1 целое число N (2 ≤ N ≤ 6)."
+    },
+    {
+        title: "5 модуль • MPIBegin78",
+        desc: "MPIBegin78. В каждом процессе дан набор из N целых чисел. Используя функции MPI_Comm_split и MPI_Sendrecv, осуществить для процессов с рангами, не кратными заданному числу N (1 < N < K), где K — количество процессов, обмен данными между процессами с симметричными рангами (первый с конца с первым, второй с конца со вторым и т. д.) в новом коммуникаторе. Вывести в каждом процессе, входящем в новый коммуникатор, полученный набор чисел.",
+        template: "# Эмуляция MPIBegin78 (Google Colab)\n\nK = 6 # Общее количество процессов\nnum_elements = 5 # N чисел в наборе\n\n# ---------- ВВОД N (для критерия не кратности) ----------\nN_split = int(input(\"Введите N (1 < N < K) для критерия не кратности: \"))\nif not (1 < N_split < K):\n    print(\"Ошибка: N должно быть > 1 и < K.\")\n    N_split = 3\nprint(f\"Используется N={N_split} для split.\\n\")\n\n# ---------- Ввод данных в каждом процессе ----------\nall_data = {} # {original_rank: [data]}\nprint(\"Введите наборы целых чисел для каждого процесса:\\n\")\nfor rank in range(K):\n    nums = []\n    print(f\"Процесс {rank}: введите {num_elements} целых чисел\")\n    for i in range(num_elements):\n        x = int(input(f\" число {i+1}: \"))\n        nums.append(x)\n    all_data[rank] = nums\n    print()\n\n# ---------- Эмуляция MPI_Comm_split ----------\n# Процессы с рангами, не кратными N_split\nnon_multiple_ranks = [r for r in range(K) if r % N_split != 0]\ncomm_size = len(non_multiple_ranks)\n\nif comm_size < 2:\n    print(\"Недостаточно процессов для обмена.\\n\")\n    exit()\n\n# ---------- Эмуляция MPI_Sendrecv (симметричный обмен) ----------\nreceived_data = {}\n\nfor i in range(comm_size // 2):\n    # Процесс в начале\n    rank_a = non_multiple_ranks[i]\n    # Симметричный процесс в конце\n    rank_b = non_multiple_ranks[comm_size - 1 - i]\n\n    # Обмен:\n    # rank_a получает данные от rank_b\n    received_data[rank_a] = all_data[rank_b]\n    # rank_b получает данные от rank_a\n    received_data[rank_b] = all_data[rank_a]\n\n# Если нечетное число процессов, центральный не обменивается\nif comm_size % 2 != 0:\n    center_index = comm_size // 2\n    center_rank = non_multiple_ranks[center_index]\n    received_data[center_rank] = all_data[center_rank] # Он получает свои же данные\n\n# ======== Вывод в каждом процессе ========\nprint(\"\\n=== Результат обмена ===\")\nfor rank in range(K):\n    if rank in received_data:\n        print(f\"Исходный ранг {rank}: Полученный набор: {received_data[rank]}\")\n    else:\n        print(f\"Исходный ранг {rank}: Не участвовал в обмене.\")",
+        input_tip: "Ожидается 1 целое число N (1 < N < 6), затем 6 наборов по 5 целых чисел."
+    },
+    {
+        title: "5 модуль • MPIBegin80",
+        desc: "MPIBegin80. В каждом процессе дан набор из N целых чисел. Используя функцию MPI_Reduce, найти сумму элементов данных наборов с одним и тем же порядковым номером, а затем с помощью функции MPI_Scatter переслать по одному элементу полученного суммарного набора процессам с четными рангами (включая главный), а процессам с нечетными рангами переслать данное в главном процессе).",
+        template: "# Эмуляция MPIBegin80 (Google Colab)\n\nK = 3 # Количество процессов\nN = 4 # Количество чисел в наборе\n\n# ---------- ВВОД ДАННЫХ ----------\ndata_sets = [] \nprint(f\"Введите {N} целых чисел для каждого из {K} процессов:\\n\")\n\nfor rank in range(K):\n    numbers = []\n    print(f\"Процесс {rank}:\")\n    for i in range(N):\n        x = int(input(f\" число {i+1}: \"))\n        numbers.append(x)\n    data_sets.append(numbers)\n    print()\n\n# ---------- Эмуляция MPI_Reduce(MPI_SUM) ----------\n# Сумма элементов по каждому индексу\nsum_values = []\nfor i in range(N):\n    ith_values = [data_sets[rank][i] for rank in range(K)]\n    sum_i = sum(ith_values)\n    sum_values.append(sum_i)\n\n# ---------- ВВОД ДОПОЛНИТЕЛЬНЫХ ДАННЫХ ДЛЯ НЕЧЕТНЫХ ПРОЦЕССОВ ----------\nmain_process_data = int(input(\"Главный процесс (0): введите целое число для нечетных процессов: \"))\n\n# ---------- Эмуляция MPI_Scatter и MPI_Bcast ========\nreceived_data = [None] * K\n\n# Логика распределения\nfor rank in range(K):\n    if rank % 2 == 0: # Четные ранги\n        # Эмуляция MPI_Scatter: rank 0 отправляет элемент из sum_values\n        # Предполагаем, что элемент берется по порядку: 0->0, 2->1, 4->2...\n        scatter_index = rank / 2\n        if scatter_index < len(sum_values):\n            received_data[rank] = sum_values[scatter_index]\n        else:\n            received_data[rank] = \"(нет данных из Reduce)\"\n    else: # Нечетные ранги\n        # Эмуляция Bcast: rank 0 отправляет main_process_data\n        received_data[rank] = main_process_data\n\n# ======== Вывод ======== \nprint(\"\\n=== Результаты MPI_Reduce и MPI_Scatter/Bcast ===\")\nfor rank in range(K):\n    print(f\"Процесс {rank} получил: {received_data[rank]}\")",
+        input_tip: "Ожидается 4 целых числа для Процесса 0, 4 для Процесса 1, 4 для Процесса 2. Затем 1 целое число (данное в главном процессе). Всего 13 чисел."
+    }
+];
+
+// 1. Инициализация и настройка Pyodide
+async function initializePyodide(pyodidePromise) {
+    pyodide = await pyodidePromise;
+
+    // Перехват stdout и stderr (WebOutput из py-java.js)
+    await pyodide.runPythonAsync(`
+import sys
+class WebOutput:
+    def __init__(self):
+        self.text = ""
+    def write(self, s):
+        self.text += str(s)
+    def flush(self):
+        pass
+
+web_stdout = WebOutput()
+web_stderr = WebOutput()
+sys.stdout = web_stdout
+sys.stderr = web_stderr
+`);
+
+    // Скрываем статус загрузки и создаем блоки задач
+    document.getElementById('loading-status').style.display = 'none';
+    createTasks(tasks);
+}
+
+// 2. Генерация блоков задач
+function createTasks(tasks) {
+    const container = document.getElementById('tasks-container');
+    tasks.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.className = 'task-block';
+        div.innerHTML = `
+            <h3 id="task-${i}">${t.title}</h3>
+            <p class="description"><b>Задание:</b> ${t.desc.replace(/\n/g, '<br>')}</p>
+            <h4>Входные данные (построчно)</h4>
+            <p class="info">⚠️ Введите все необходимые числа <b>по порядку, каждое с новой строки</b>. Пример: ${t.input_tip}</p>
+            <textarea id="input_data${i}" class="input-area" placeholder="Ввод для программы..." rows="4"></textarea>
+
+            <h4>Ваш код</h4>
+            <textarea id="code_area${i}" class="code-area" placeholder="Напишите ваш Python код здесь..." rows="10">${t.template}</textarea>
+
+            <button class="run" onclick="runCode(${i})">▶ Запустить код</button>
+
+            <h4>Вывод:</h4>
+            <div id="output${i}" class="output">Pyodide загружен — можно запускать код.</div>
+            <p class="info">Время выполнения: <span id="time${i}">0.00</span> с.</p>
+        `;
+        container.appendChild(div);
+    });
+}
+
+
+// 3. Функция запуска кода
+async function runCode(taskId) {
+    const outputElement = document.getElementById(`output${taskId}`);
+    const code = document.getElementById(`code_area${taskId}`).value;
+    const input_text = document.getElementById(`input_data${taskId}`).value;
+    const timeElement = document.getElementById(`time${taskId}`);
+
+    if (!pyodide) {
+        outputElement.textContent = "Загрузка Pyodide... Подождите.";
+        outputElement.style.color = '#fff';
+        return;
+    }
+    
+    // Сброс цвета вывода
+    outputElement.style.color = '#0f0';
+
+    const startTime = performance.now();
+
+    // 1. Очищаем буфер Python
+    await pyodide.runPythonAsync("web_stdout.text = ''; web_stderr.text = ''");
+
+    // 2. Подготовка ввода (обработка многострочного ввода)
+    let input_lines = input_text.replace(/\r\n/g, '\n').split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+    let input_index = 0;
+
+    outputElement.textContent = "Запуск программы...\n";
+
+    // Переопределение функции ввода Pyodide
+    pyodide.setStdin({
+        stdin: () => {
+            if (input_index < input_lines.length) {
+                const line = input_lines[input_index++];
+                // Выводим в консоль, какое значение было прочитано
+                outputElement.textContent += `[ВВОД: ${line}]\n`;
+                return line;
+            }
+
+            // Ошибка при нехватке ввода
+            throw new Error(`InputError: Недостаточно входных данных. Программа ожидает больше вызовов input() (попыток: ${input_index}), чем было строк (${input_lines.length}) в поле 'Входные данные'.`);
+        }
+    });
+
+    try {
+        // 3. Выполнение кода
+        await pyodide.runPythonAsync(code);
+
+        // 4. Получение вывода
+        let out = pyodide.runPython("web_stdout.text");
+        let err = pyodide.runPython("web_stderr.text");
+
+        outputElement.textContent = out;
+        if (err) {
+            outputElement.textContent += `\n\n❌ Ошибка (stderr):\n${err}`;
+            outputElement.style.color = 'red';
+        } else {
+            outputElement.textContent += "\n\n✅ Выполнение завершено.";
+        }
+
+    } catch (e) {
+        // 5. Обработка ошибки
+        let error_msg = '\n\n❌ Ошибка выполнения:\n' + e.toString().replace("PyodideError: ", "");
+        outputElement.textContent += error_msg;
+        outputElement.style.color = 'red';
+    } finally {
+        // 6. Восстановление stdin и подсчет времени
+        pyodide.setStdin({ stdin: () => null }); 
+        const endTime = performance.now();
+        timeElement.textContent = ((endTime - startTime) / 1000).toFixed(2);
+    }
+}
+
+// Запускаем асинхронную инициализацию
+initializePyodide(loadPyodide());
+</script>
+
+</body>
+</html>
+```
